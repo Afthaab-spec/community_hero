@@ -23,7 +23,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  const [filterStatus, setFilterStatus] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   // Check if user is admin
   if (user?.role !== "admin") {
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   const { data: stats, isLoading } = trpc.issues.list.useQuery({ limit: 1 }); // Placeholder for admin stats
   const { data: allIssues } = trpc.issues.list.useQuery({
     limit: 500,
-    status: filterStatus as any,
+    ...(filterStatus ? { status: filterStatus as any } : {}),
   });
   const updateStatusMutation = trpc.issues.updateStatus.useMutation();
 
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "bold" }}>All Issues</h2>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <Select value={filterStatus || "all"} onValueChange={(val) => setFilterStatus(val === "all" ? null : val)}>
               <SelectTrigger style={{
                 padding: "8px 12px",
                 borderRadius: "6px",
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Open">Open</SelectItem>
                 <SelectItem value="InProgress">In Progress</SelectItem>
                 <SelectItem value="Resolved">Resolved</SelectItem>
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
                         </td>
                         <td style={{ padding: "16px" }}>
                           <Select
-                            value={issue.status}
+                            value={issue.status || "Open"}
                             onValueChange={(newStatus) =>
                               handleStatusUpdate(issue.id, newStatus)
                             }
