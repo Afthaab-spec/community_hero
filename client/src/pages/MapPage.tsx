@@ -25,14 +25,14 @@ const STATUS_COLORS: Record<string, string> = {
 export default function MapPage() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const [status, setStatus] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [status, setStatus] = useState<string | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: issues, isLoading } = trpc.issues.list.useQuery({
     limit: 200,
-    status: status as any,
-    category: category || undefined,
+    ...(status ? { status: status as any } : {}),
+    ...(category ? { category } : {}),
   });
 
   const { data: heatmapData } = trpc.heatmap.getData.useQuery();
@@ -78,7 +78,7 @@ export default function MapPage() {
 
           {/* Filters */}
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status || "all"} onValueChange={(val) => setStatus(val === "all" ? null : val)}>
               <SelectTrigger style={{
                 padding: "8px 12px",
                 borderRadius: "6px",
@@ -89,14 +89,14 @@ export default function MapPage() {
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Open">Open</SelectItem>
                 <SelectItem value="InProgress">In Progress</SelectItem>
                 <SelectItem value="Resolved">Resolved</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category || "all"} onValueChange={(val) => setCategory(val === "all" ? null : val)}>
               <SelectTrigger style={{
                 padding: "8px 12px",
                 borderRadius: "6px",
@@ -107,7 +107,7 @@ export default function MapPage() {
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="Roads">Roads</SelectItem>
                 <SelectItem value="Water">Water</SelectItem>
                 <SelectItem value="Electricity">Electricity</SelectItem>
