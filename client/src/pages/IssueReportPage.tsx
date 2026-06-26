@@ -43,6 +43,7 @@ export default function IssueReportPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const createIssueMutation = trpc.issues.create.useMutation();
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -56,13 +57,7 @@ export default function IssueReportPage() {
   });
 
   const [preview, setPreview] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<{
-    category?: string;
-    severity?: number;
-    summary?: string;
-  } | null>(null);
 
   // Get current location
   const getLocation = () => {
@@ -103,14 +98,6 @@ export default function IssueReportPage() {
         setPreview(event.target?.result as string);
       };
       reader.readAsDataURL(file);
-
-      // TODO: Call LLM to analyze photo and suggest category/severity
-      // For now, show a placeholder
-      setAiSuggestions({
-        category: "Roads",
-        severity: 7,
-        summary: "Analyzing image...",
-      });
     }
   };
 
@@ -138,48 +125,73 @@ export default function IssueReportPage() {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // TODO: Upload photo to S3 and get URL
-      // TODO: Call LLM to get category, severity, and summary
-      // TODO: Create issue via tRPC
+      let photoBase64: string | undefined;
+
+      if (formData.photo) {
+        const reader = new FileReader();
+        photoBase64 = await new Promise((resolve) => {
+          reader.onload = () => {
+            const base64 = (reader.result as string).split(",")[1];
+            resolve(base64);
+          };
+          reader.readAsDataURL(formData.photo!);
+        });
+      }
+
+      await createIssueMutation.mutateAsync({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category as any,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        address: formData.address,
+        photoBase64,
+        isAnonymous: formData.isAnonymous,
+      });
 
       toast.success("Issue reported successfully!");
       navigate("/map");
     } catch (error) {
       console.error("Error reporting issue:", error);
       toast.error("Failed to report issue. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="container py-12">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Report an Issue</h1>
-          <p className="text-[hsl(var(--muted-foreground))]">
+    <div style={{ padding: "48px 20px", backgroundColor: "hsl(var(--background))" }}>
+      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "8px" }}>Report an Issue</h1>
+          <p style={{ color: "hsl(var(--muted-foreground))" }}>
             Help us improve your neighborhood by reporting local problems
           </p>
         </div>
 
-        <Card className="card-elevated">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <Card style={{ padding: "32px", borderRadius: "12px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
             {/* Photo Upload */}
-            <div className="space-y-4">
-              <Label className="text-base font-semibold">Photo (Optional)</Label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <Label style={{ fontSize: "16px", fontWeight: "600" }}>Photo (Optional)</Label>
               <div
-                className="border-2 border-dashed border-[hsl(var(--border))] rounded-lg p-8 text-center cursor-pointer hover:bg-[hsl(var(--muted))]/50 transition-colors"
+                style={{
+                  border: "2px dashed hsl(var(--border))",
+                  borderRadius: "8px",
+                  padding: "32px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                }}
                 onClick={() => fileInputRef.current?.click()}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "hsl(var(--muted)) 50%")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
               >
                 {preview ? (
-                  <div className="space-y-4">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <img
                       src={preview}
                       alt="Preview"
-                      className="max-h-64 mx-auto rounded-lg"
+                      style={{ maxHeight: "256px", margin: "0 auto", borderRadius: "8px" }}
                     />
                     <Button
                       type="button"
@@ -194,13 +206,13 @@ export default function IssueReportPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <Upload className="w-12 h-12 mx-auto text-[hsl(var(--muted-foreground))]" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <Upload size={48} style={{ margin: "0 auto", color: "hsl(var(--muted-foreground))" }} />
                     <div>
-                      <p className="font-semibold text-[hsl(var(--foreground))]">
+                      <p style={{ fontWeight: "600", color: "hsl(var(--foreground))" }}>
                         Click to upload a photo
                       </p>
-                      <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                      <p style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
                         PNG, JPG up to 10MB
                       </p>
                     </div>
@@ -212,49 +224,13 @@ export default function IssueReportPage() {
                 type="file"
                 accept="image/*"
                 onChange={handlePhotoChange}
-                className="hidden"
+                style={{ display: "none" }}
               />
             </div>
 
-            {/* AI Suggestions */}
-            {aiSuggestions && (
-              <div className="bg-[hsl(var(--accent))]/5 border border-accent/20 rounded-lg p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-[hsl(var(--foreground))] mb-2">
-                      AI Suggestions
-                    </p>
-                    <div className="space-y-2 text-sm">
-                      {aiSuggestions.category && (
-                        <p>
-                          <span className="text-[hsl(var(--muted-foreground))]">Category:</span>{" "}
-                          <span className="font-medium">{aiSuggestions.category}</span>
-                        </p>
-                      )}
-                      {aiSuggestions.severity && (
-                        <p>
-                          <span className="text-[hsl(var(--muted-foreground))]">Severity:</span>{" "}
-                          <span className="font-medium">
-                            {aiSuggestions.severity}/10
-                          </span>
-                        </p>
-                      )}
-                      {aiSuggestions.summary && (
-                        <p>
-                          <span className="text-[hsl(var(--muted-foreground))]">Summary:</span>{" "}
-                          <span className="font-medium">{aiSuggestions.summary}</span>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-base font-semibold">
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <Label htmlFor="title" style={{ fontSize: "16px", fontWeight: "600" }}>
                 Issue Title
               </Label>
               <Input
@@ -264,13 +240,18 @@ export default function IssueReportPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="input-elegant"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "hsl(var(--background))",
+                }}
               />
             </div>
 
             {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-base font-semibold">
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <Label htmlFor="description" style={{ fontSize: "16px", fontWeight: "600" }}>
                 Description
               </Label>
               <Textarea
@@ -283,13 +264,20 @@ export default function IssueReportPage() {
                     description: e.target.value,
                   }))
                 }
-                className="input-elegant min-h-32"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "hsl(var(--background))",
+                  minHeight: "128px",
+                  fontFamily: "inherit",
+                }}
               />
             </div>
 
             {/* Category */}
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-base font-semibold">
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <Label htmlFor="category" style={{ fontSize: "16px", fontWeight: "600" }}>
                 Category
               </Label>
               <Select
@@ -298,7 +286,12 @@ export default function IssueReportPage() {
                   setFormData((prev) => ({ ...prev, category: value }))
                 }
               >
-                <SelectTrigger className="input-elegant">
+                <SelectTrigger style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "hsl(var(--background))",
+                }}>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,24 +305,25 @@ export default function IssueReportPage() {
             </div>
 
             {/* Location */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Location</Label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Label style={{ fontSize: "16px", fontWeight: "600" }}>Location</Label>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={getLocation}
                   disabled={isLoadingLocation}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   {isLoadingLocation ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
                       Getting location...
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-4 h-4 mr-2" />
+                      <MapPin size={16} />
                       Capture Location
                     </>
                   )}
@@ -337,11 +331,11 @@ export default function IssueReportPage() {
               </div>
 
               {formData.latitude && formData.longitude && (
-                <div className="bg-[hsl(var(--muted))]/50 rounded-lg p-4">
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                <div style={{ backgroundColor: "hsl(var(--muted)) 50%", borderRadius: "8px", padding: "16px" }}>
+                  <p style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
                     Latitude: {formData.latitude.toFixed(6)}
                   </p>
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  <p style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
                     Longitude: {formData.longitude.toFixed(6)}
                   </p>
                 </div>
@@ -353,12 +347,17 @@ export default function IssueReportPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, address: e.target.value }))
                 }
-                className="input-elegant"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "hsl(var(--background))",
+                }}
               />
             </div>
 
             {/* Anonymous */}
-            <div className="flex items-center gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <Checkbox
                 id="anonymous"
                 checked={formData.isAnonymous}
@@ -369,21 +368,21 @@ export default function IssueReportPage() {
                   }))
                 }
               />
-              <Label htmlFor="anonymous" className="cursor-pointer">
+              <Label htmlFor="anonymous" style={{ cursor: "pointer" }}>
                 Report anonymously
               </Label>
             </div>
 
             {/* Submit */}
-            <div className="flex gap-3 pt-4">
+            <div style={{ display: "flex", gap: "12px", paddingTop: "16px" }}>
               <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
+                disabled={createIssueMutation.isPending}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >
-                {isSubmitting ? (
+                {createIssueMutation.isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
                     Submitting...
                   </>
                 ) : (
