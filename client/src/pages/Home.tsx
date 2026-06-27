@@ -41,29 +41,139 @@ export default function Home() {
                 {isAuthenticated ? (
                   <>
                     <Link href="/report">
-                      <Button style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "12px 32px",
+                          background: "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent)) 80%)",
+                          color: "hsl(var(--accent-foreground))",
+                          borderRadius: "8px",
+                          fontWeight: "600",
+                          fontSize: "16px",
+                          cursor: "pointer",
+                          border: "none",
+                          transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                          position: "relative",
+                          overflow: "hidden",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.1)";
+                        }}
+                      >
                         Report an Issue
-                        <ArrowRight size={16} />
-                      </Button>
+                        <ArrowRight size={18} style={{ transition: "transform 0.3s" }} />
+                      </div>
                     </Link>
                     <Link href="/map">
-                      <Button variant="outline" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "12px 32px",
+                          background: "transparent",
+                          color: "hsl(var(--foreground))",
+                          borderRadius: "8px",
+                          fontWeight: "600",
+                          fontSize: "16px",
+                          cursor: "pointer",
+                          border: "2px solid hsl(var(--border))",
+                          transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                          position: "relative",
+                          overflow: "hidden",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 5%";
+                          e.currentTarget.style.borderColor = "hsl(var(--accent))";
+                          e.currentTarget.style.color = "hsl(var(--accent))";
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.borderColor = "hsl(var(--border))";
+                          e.currentTarget.style.color = "hsl(var(--foreground))";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }}
+                      >
                         View Map
-                        <MapPin size={16} />
-                      </Button>
+                        <MapPin size={18} />
+                      </div>
                     </Link>
                   </>
                 ) : (
                   <>
-                    <Button asChild style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <a href={getLoginUrl()}>
-                        Get Started
-                        <ArrowRight size={16} />
-                      </a>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <a href="#features">Learn More</a>
-                    </Button>
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "12px 32px",
+                        background: "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent)) 80%)",
+                        color: "hsl(var(--accent-foreground))",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        fontSize: "16px",
+                        cursor: "pointer",
+                        border: "none",
+                        transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                      onClick={() => (window.location.href = getLoginUrl())}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.1)";
+                      }}
+                    >
+                      Get Started
+                      <ArrowRight size={18} />
+                    </div>
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "12px 32px",
+                        background: "transparent",
+                        color: "hsl(var(--foreground))",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        fontSize: "16px",
+                        cursor: "pointer",
+                        border: "2px solid hsl(var(--border))",
+                        transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                      onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 5%";
+                        e.currentTarget.style.borderColor = "hsl(var(--accent))";
+                        e.currentTarget.style.color = "hsl(var(--accent))";
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.borderColor = "hsl(var(--border))";
+                        e.currentTarget.style.color = "hsl(var(--foreground))";
+                        e.currentTarget.style.transform = "translateY(0)";
+                      }}
+                    >
+                      Learn More
+                    </div>
                   </>
                 )}
               </div>
@@ -170,12 +280,37 @@ export default function Home() {
               Join thousands of citizens who are transforming their neighborhoods
               into thriving communities
             </p>
-            <Button variant="secondary" asChild style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-              <a href={getLoginUrl()}>
-                Get Started Today
-                <ArrowRight size={16} />
-              </a>
-            </Button>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "14px 36px",
+                background: "hsl(var(--background))",
+                color: "hsl(var(--foreground))",
+                borderRadius: "8px",
+                fontWeight: "600",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "none",
+                transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              onClick={() => (window.location.href = getLoginUrl())}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.2)";
+              }}
+            >
+              Get Started Today
+              <ArrowRight size={18} />
+            </div>
           </div>
         </section>
       )}
