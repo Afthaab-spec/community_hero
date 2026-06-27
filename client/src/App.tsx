@@ -12,6 +12,8 @@ import CitizenDashboard from "./pages/CitizenDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Navigation from "./components/Navigation";
 import { useAuth } from "./_core/hooks/useAuth";
+import LoginPage from "./pages/LoginPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 
 function Router() {
   const { isAuthenticated, user } = useAuth();
@@ -19,6 +21,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/admin-login" component={AdminLoginPage} />
       <Route path="/report" component={IssueReportPage} />
       <Route path="/issue/:id" component={IssueDetailPage} />
       <Route path="/map" component={MapPage} />
@@ -31,13 +35,16 @@ function Router() {
 }
 
 function App() {
+  const { isAuthenticated } = useAuth();
+  const showNavigation = !window.location.pathname.includes("/login");
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <div className="flex flex-col min-h-screen">
-            <Navigation />
+            {showNavigation && <Navigation />}
             <main className="flex-1">
               <Router />
             </main>
