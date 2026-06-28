@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, MapPin } from "lucide-react";
+import { Loader2, Plus, MapPin, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -28,6 +28,7 @@ export default function MapPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
   const { data: mapKey, isLoading: mapKeyLoading } = trpc.config.getGoogleMapsKey.useQuery();
 
@@ -48,9 +49,47 @@ export default function MapPage() {
   });
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 64px)" }}>
+    <div style={{ position: "relative", height: "calc(100vh - 64px)", overflow: "hidden" }}>
+      {/* Toggle button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "absolute",
+          top: "12px",
+          left: sidebarOpen ? "332px" : "12px",
+          zIndex: 30,
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "8px",
+          padding: "8px",
+          cursor: "pointer",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          transition: "left 0.3s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+      </button>
+
       {/* Sidebar */}
-      <div style={{ width: "320px", borderRight: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", overflow: "auto", display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: sidebarOpen ? "0" : "-340px",
+          width: "320px",
+          height: "100%",
+          borderRight: "1px solid hsl(var(--border))",
+          backgroundColor: "hsl(var(--card))",
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 20,
+          transition: "left 0.3s ease",
+        }}
+      >
         <div style={{ padding: "20px", borderBottom: "1px solid hsl(var(--border))" }}>
           <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>Issues</h2>
 
@@ -174,7 +213,7 @@ export default function MapPage() {
       </div>
 
       {/* Map */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div style={{ width: "100%", height: "100%", position: "relative" }}>
         {mapKeyLoading ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "500px", backgroundColor: "hsl(var(--muted))" }}>
             <p style={{ color: "hsl(var(--muted-foreground))" }}>Loading map...</p>
