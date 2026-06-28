@@ -79,28 +79,25 @@ export default function Home() {
                           alignItems: "center",
                           gap: "8px",
                           padding: "12px 32px",
-                          background: "transparent",
-                          color: "hsl(var(--foreground))",
+                          background: "linear-gradient(135deg, #22c55e, #10b981)",
+                          color: "#fff",
                           borderRadius: "8px",
                           fontWeight: "600",
                           fontSize: "16px",
                           cursor: "pointer",
-                          border: "2px solid hsl(var(--border))",
+                          border: "none",
                           transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+                          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
                           position: "relative",
                           overflow: "hidden",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 5%";
-                          e.currentTarget.style.borderColor = "hsl(var(--accent))";
-                          e.currentTarget.style.color = "hsl(var(--accent))";
                           e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.15)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                          e.currentTarget.style.borderColor = "hsl(var(--border))";
-                          e.currentTarget.style.color = "hsl(var(--foreground))";
                           e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.1)";
                         }}
                       >
                         View Map
@@ -248,7 +245,22 @@ export default function Home() {
             ].map((feature, i) => {
               const Icon = feature.icon;
               return (
-                <Card key={i} style={{ padding: "24px", borderRadius: "12px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "all 0.2s" }}>
+                <Card
+                  key={i}
+                  style={{ padding: "24px", borderRadius: "12px", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--card))", boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "all 0.25s ease", cursor: "default" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#dcfce7";
+                    e.currentTarget.style.transform = "translateY(-6px)";
+                    e.currentTarget.style.boxShadow = "0 12px 24px -4px rgba(34, 197, 94, 0.25), 0 4px 8px -2px rgba(0, 0, 0, 0.1)";
+                    e.currentTarget.style.borderColor = "#86efac";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "hsl(var(--card))";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 1px 3px 0 rgba(0, 0, 0, 0.1)";
+                    e.currentTarget.style.borderColor = "hsl(var(--border))";
+                  }}
+                >
                   <div style={{ display: "flex", gap: "16px" }}>
                     <div style={{ flexShrink: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "48px", height: "48px", borderRadius: "8px", backgroundColor: "hsl(var(--accent)) 10%", color: "hsl(var(--accent))" }}>

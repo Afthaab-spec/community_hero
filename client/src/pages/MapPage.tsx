@@ -29,6 +29,8 @@ export default function MapPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { data: mapKey, isLoading: mapKeyLoading } = trpc.config.getGoogleMapsKey.useQuery();
+
   const { data: issues, isLoading } = trpc.issues.list.useQuery({
     limit: 200,
     ...(status ? { status: status as any } : {}),
@@ -55,7 +57,7 @@ export default function MapPage() {
           {isAuthenticated && (
             <Button
               onClick={() => navigate("/report")}
-              style={{ width: "100%", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+              className="w-full mb-4"
             >
               <Plus size={16} />
               Report Issue
@@ -67,25 +69,13 @@ export default function MapPage() {
             placeholder="Search issues..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "6px",
-              border: "1px solid hsl(var(--border))",
-              backgroundColor: "hsl(var(--background))",
-              marginBottom: "12px",
-            }}
+            className="mb-3"
           />
 
           {/* Filters */}
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <Select value={status || "all"} onValueChange={(val) => setStatus(val === "all" ? null : val)}>
-              <SelectTrigger style={{
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid hsl(var(--border))",
-                backgroundColor: "hsl(var(--background))",
-                fontSize: "14px",
-              }}>
+              <SelectTrigger>
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
@@ -97,13 +87,7 @@ export default function MapPage() {
             </Select>
 
             <Select value={category || "all"} onValueChange={(val) => setCategory(val === "all" ? null : val)}>
-              <SelectTrigger style={{
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid hsl(var(--border))",
-                backgroundColor: "hsl(var(--background))",
-                fontSize: "14px",
-              }}>
+              <SelectTrigger>
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
@@ -191,23 +175,35 @@ export default function MapPage() {
 
       {/* Map */}
       <div style={{ flex: 1, position: "relative" }}>
-        <MapView
-          initialCenter={{ lat: 40.7128, lng: -74.006 }}
-          initialZoom={14}
-          onMapReady={(map) => {
-            // Add markers for issues
-            filteredIssues?.forEach((issue) => {
-              if (issue.latitude && issue.longitude) {
-                const marker = new google.maps.marker.AdvancedMarkerElement({
-                  map,
-                  position: { lat: issue.latitude as any, lng: issue.longitude as any },
-                  title: issue.title,
-                });
-                marker.addListener('click', () => navigate(`/issue/${issue.id}`));
-              }
-            });
-          }}
-        />
+        {mapKeyLoading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "500px", backgroundColor: "hsl(var(--muted))" }}>
+            <p style={{ color: "hsl(var(--muted-foreground))" }}>Loading map...</p>
+          </div>
+        ) : !mapKey ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "500px", backgroundColor: "hsl(var(--muted))" }}>
+            <p style={{ color: "hsl(var(--muted-foreground))" }}>Google Maps API key is not configured. Ask an admin to set it in Settings.</p>
+          </div>
+        ) : (
+          <MapView
+            apiKey={mapKey}
+            initialCenter={{ lat: 40.7128, lng: -74.006 }}
+            initialZoom={14}
+            onMapReady={(map) => {
+              const markers: google.maps.Marker[] = [];
+              filteredIssues?.forEach((issue) => {
+                if (issue.latitude && issue.longitude) {
+                  const marker = new google.maps.Marker({
+                    map,
+                    position: { lat: issue.latitude as any, lng: issue.longitude as any },
+                    title: issue.title,
+                  });
+                  marker.addListener("click", () => navigate(`/issue/${issue.id}`));
+                  markers.push(marker);
+                }
+              });
+            }}
+          />
+        )}
       </div>
     </div>
   );

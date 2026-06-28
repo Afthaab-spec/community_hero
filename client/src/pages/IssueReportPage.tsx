@@ -240,12 +240,6 @@ export default function IssueReportPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1px solid hsl(var(--border))",
-                  backgroundColor: "hsl(var(--background))",
-                }}
               />
             </div>
 
@@ -264,14 +258,7 @@ export default function IssueReportPage() {
                     description: e.target.value,
                   }))
                 }
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1px solid hsl(var(--border))",
-                  backgroundColor: "hsl(var(--background))",
-                  minHeight: "128px",
-                  fontFamily: "inherit",
-                }}
+                className="min-h-[128px]"
               />
             </div>
 
@@ -286,12 +273,7 @@ export default function IssueReportPage() {
                   setFormData((prev) => ({ ...prev, category: value }))
                 }
               >
-                <SelectTrigger style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1px solid hsl(var(--border))",
-                  backgroundColor: "hsl(var(--background))",
-                }}>
+                <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -310,11 +292,10 @@ export default function IssueReportPage() {
                 <Label style={{ fontSize: "16px", fontWeight: "600" }}>Location</Label>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="default"
                   size="sm"
                   onClick={getLocation}
                   disabled={isLoadingLocation}
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   {isLoadingLocation ? (
                     <>
@@ -347,12 +328,6 @@ export default function IssueReportPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, address: e.target.value }))
                 }
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1px solid hsl(var(--border))",
-                  backgroundColor: "hsl(var(--background))",
-                }}
               />
             </div>
 
@@ -378,7 +353,8 @@ export default function IssueReportPage() {
               <Button
                 type="submit"
                 disabled={createIssueMutation.isPending}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                className="flex-1"
+                size="lg"
               >
                 {createIssueMutation.isPending ? (
                   <>
@@ -391,12 +367,12 @@ export default function IssueReportPage() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="default"
                 onClick={() => navigate("/")}
+                size="lg"
               >
                 Cancel
-              </Button>
-            </div>
+              </Button>            </div>
           </form>
         </Card>
       </div>

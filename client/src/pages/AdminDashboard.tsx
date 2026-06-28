@@ -166,14 +166,7 @@ export default function AdminDashboard() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "bold" }}>All Issues</h2>
             <Select value={filterStatus || "all"} onValueChange={(val) => setFilterStatus(val === "all" ? null : val)}>
-              <SelectTrigger style={{
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid hsl(var(--border))",
-                backgroundColor: "hsl(var(--background))",
-                fontSize: "14px",
-                width: "200px",
-              }}>
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -251,14 +244,7 @@ export default function AdminDashboard() {
                               handleStatusUpdate(issue.id, newStatus)
                             }
                           >
-                            <SelectTrigger style={{
-                              padding: "6px 10px",
-                              borderRadius: "4px",
-                              border: "1px solid hsl(var(--border))",
-                              backgroundColor: "hsl(var(--background))",
-                              fontSize: "12px",
-                              width: "140px",
-                            }}>
+                            <SelectTrigger size="sm" className="w-[140px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

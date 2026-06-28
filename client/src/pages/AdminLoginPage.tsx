@@ -3,6 +3,7 @@ import { ArrowRight, Shield, BarChart3, Users, AlertCircle } from "lucide-react"
 import { getLoginUrl } from "@/const";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function AdminLoginPage() {
   const { isAuthenticated, user } = useAuth();
@@ -312,37 +313,15 @@ export default function AdminLoginPage() {
 
         {/* Login Options */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <button
+          <Button
             onClick={() => (window.location.href = getLoginUrl())}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              padding: "14px 20px",
-              background: "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent)) 80%)",
-              color: "hsl(var(--accent-foreground))",
-              borderRadius: "8px",
-              fontWeight: "600",
-              fontSize: "15px",
-              cursor: "pointer",
-              border: "none",
-              transition: "all 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
-              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.15)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.1)";
-            }}
+            className="w-full"
+            size="lg"
           >
             <Shield size={18} />
             Sign In as Administrator
             <ArrowRight size={18} />
-          </button>
+          </Button>
 
           <div
             style={{
@@ -377,37 +356,15 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          <button
+          <Button
+            variant="outline"
             onClick={() => (window.location.href = "/")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              padding: "14px 20px",
-              background: "transparent",
-              color: "hsl(var(--foreground))",
-              borderRadius: "8px",
-              fontWeight: "600",
-              fontSize: "15px",
-              cursor: "pointer",
-              border: "2px solid hsl(var(--border))",
-              transition: "all 0.3s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 8%";
-              e.currentTarget.style.borderColor = "hsl(var(--accent))";
-              e.currentTarget.style.color = "hsl(var(--accent))";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.borderColor = "hsl(var(--border))";
-              e.currentTarget.style.color = "hsl(var(--foreground))";
-            }}
+            className="w-full"
+            size="lg"
           >
             <span>👤</span>
             Back to Home
-          </button>
+          </Button>
         </div>
 
         {/* Footer */}

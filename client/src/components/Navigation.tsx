@@ -374,46 +374,88 @@ export default function Navigation() {
                     </Link>
 
                     {user?.role === "admin" && (
-                      <Link href="/admin">
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            padding: "10px 12px",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            transition: "all 0.2s",
-                            color: "hsl(var(--foreground))",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 8%";
-                            e.currentTarget.style.color = "hsl(var(--accent))";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "transparent";
-                            e.currentTarget.style.color = "hsl(var(--foreground))";
-                          }}
-                          onClick={() => setProfileMenuOpen(false)}
-                        >
+                      <>
+                        <Link href="/admin">
                           <div
                             style={{
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "6px",
-                              background: "hsl(var(--accent)) 10%",
                               display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
+                              gap: "12px",
+                              padding: "10px 12px",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              transition: "all 0.2s",
+                              color: "hsl(var(--foreground))",
+                              fontSize: "14px",
+                              fontWeight: "500",
                             }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 8%";
+                              e.currentTarget.style.color = "hsl(var(--accent))";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                              e.currentTarget.style.color = "hsl(var(--foreground))";
+                            }}
+                            onClick={() => setProfileMenuOpen(false)}
                           >
-                            ⚙️
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "6px",
+                                background: "hsl(var(--accent)) 10%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              ⚙️
+                            </div>
+                            <span>Admin Panel</span>
                           </div>
-                          <span>Admin Panel</span>
-                        </div>
-                      </Link>
+                        </Link>
+                        <Link href="/admin/settings">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              padding: "10px 12px",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              transition: "all 0.2s",
+                              color: "hsl(var(--foreground))",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "hsl(var(--accent)) 8%";
+                              e.currentTarget.style.color = "hsl(var(--accent))";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                              e.currentTarget.style.color = "hsl(var(--foreground))";
+                            }}
+                            onClick={() => setProfileMenuOpen(false)}
+                          >
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "6px",
+                                background: "hsl(var(--accent)) 10%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Settings size={16} />
+                            </div>
+                            <span>API Settings</span>
+                          </div>
+                        </Link>
+                      </>
                     )}
 
                     <div

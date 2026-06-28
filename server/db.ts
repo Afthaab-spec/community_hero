@@ -15,6 +15,8 @@ import {
   InsertIssueStatusHistory,
   notifications,
   InsertNotification,
+  config,
+  InsertConfig,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -49,7 +51,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "loginMethod", "passwordHash"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -69,9 +71,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = "admin";
-      updateSet.role = "admin";
     }
 
     if (!values.lastSignedIn) {
@@ -171,6 +170,26 @@ export async function getIssuesByCategory(category: string, limit: number = 50, 
     .offset(offset);
 }
 
+export async function getIssuesFiltered(
+  filters: { status?: string; category?: string },
+  limit: number = 50,
+  offset: number = 0
+) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [];
+  if (filters.status) conditions.push(eq(issues.status, filters.status as any));
+  if (filters.category) conditions.push(eq(issues.category, filters.category as any));
+
+  if (conditions.length === 0) {
+    return await db.select().from(issues).orderBy(desc(issues.createdAt)).limit(limit).offset(offset);
+  }
+
+  const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
+  return await db.select().from(issues).where(whereClause).orderBy(desc(issues.createdAt)).limit(limit).offset(offset);
+}
+
 export async function getIssuesByReporter(reporterId: number, limit: number = 50, offset: number = 0) {
   const db = await getDb();
   if (!db) return [];
@@ -259,6 +278,45 @@ export async function addPoints(pointsEntry: InsertPointsLog) {
   await db
     .update(users)
     .set({ totalPoints })
+    .where(eq(users.id, pointsEntry.userId));
+
+  // Update streak
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split("T")[0];
+
+  const user = await getUserById(pointsEntry.userId);
+  if (!user) return;
+
+  const lastActivity = user.lastActivityDate;
+  const lastStr = lastActivity ? new Date(lastActivity).toISOString().split("T")[0] : null;
+
+  if (lastStr === todayStr) {
+    // Already active today, no streak change
+    return;
+  }
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+  let newStreak = 1;
+  let longestStreak = user.longestStreak || 0;
+
+  if (lastStr === yesterdayStr) {
+    // Consecutive day
+    newStreak = (user.currentStreak || 0) + 1;
+  }
+
+  longestStreak = Math.max(longestStreak, newStreak);
+
+  await db
+    .update(users)
+    .set({
+      currentStreak: newStreak,
+      longestStreak,
+      lastActivityDate: today,
+    })
     .where(eq(users.id, pointsEntry.userId));
 }
 
@@ -377,13 +435,71 @@ export async function getHeatmapData() {
   const db = await getDb();
   if (!db) return [];
 
-  // Get issue density by location (grid-based)
   return await db
     .select({
-      latitude: issues.latitude,
-      longitude: issues.longitude,
+      latitude: sql<number>`ROUND(CAST(${issues.latitude} AS DECIMAL(10,4)), 4)`,
+      longitude: sql<number>`ROUND(CAST(${issues.longitude} AS DECIMAL(11,4)), 4)`,
       count: sql<number>`COUNT(*) as count`,
     })
     .from(issues)
-    .groupBy(issues.latitude, issues.longitude);
+    .groupBy(sql`ROUND(CAST(${issues.latitude} AS DECIMAL(10,4)), 4), ROUND(CAST(${issues.longitude} AS DECIMAL(11,4)), 4)`);
+}
+
+// ===== Auth =====
+
+export async function getUserCount(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
+  return result[0]?.count ?? 0;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ===== Config =====
+
+export async function getConfig(key: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(config)
+    .where(eq(config.key, key))
+    .limit(1);
+
+  return result.length > 0 ? result[0].value : null;
+}
+
+export async function getAllConfig(): Promise<Record<string, string | null>> {
+  const db = await getDb();
+  if (!db) return {};
+
+  const rows = await db.select().from(config);
+  const result: Record<string, string | null> = {};
+  for (const row of rows) {
+    result[row.key] = row.value;
+  }
+  return result;
+}
+
+export async function setConfig(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const insert: InsertConfig = { key, value };
+  await db.insert(config).values(insert).onDuplicateKeyUpdate({
+    set: { value },
+  });
 }

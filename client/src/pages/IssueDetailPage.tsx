@@ -203,7 +203,7 @@ export default function IssueDetailPage() {
                     size="sm"
                     onClick={() => handleVerify("confirm")}
                     disabled={createVerificationMutation.isPending}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                    className="flex-1"
                   >
                     ✓ Confirm
                   </Button>
@@ -212,7 +212,7 @@ export default function IssueDetailPage() {
                     size="sm"
                     onClick={() => handleVerify("upvote")}
                     disabled={createVerificationMutation.isPending}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                    className="flex-1"
                   >
                     <ThumbsUp size={14} />
                     Upvote
@@ -222,7 +222,7 @@ export default function IssueDetailPage() {
                     size="sm"
                     onClick={() => handleVerify("flag")}
                     disabled={createVerificationMutation.isPending}
-                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                    className="flex-1"
                   >
                     <Flag size={14} />
                     Flag

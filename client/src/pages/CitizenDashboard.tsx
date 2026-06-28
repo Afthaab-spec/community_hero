@@ -145,7 +145,7 @@ export default function CitizenDashboard() {
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "bold" }}>Your Recent Reports</h2>
-            <Button onClick={() => navigate("/report")} variant="outline">
+            <Button onClick={() => navigate("/report")} variant="default">
               Report New Issue
             </Button>
           </div>

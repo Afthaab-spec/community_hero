@@ -8,17 +8,20 @@ import {
   decimal,
   boolean,
   json,
+  uniqueIndex,
 } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
  * Extended with gamification and profile fields.
+ * Supports both local auth (email/password) and external OAuth.
  */
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   
@@ -117,7 +120,9 @@ export const verifications = mysqlTable("verifications", {
   userId: int("userId").notNull(),
   verificationType: mysqlEnum("verificationType", ["upvote", "confirm", "flag"]).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  uniqueIndex("uniqueUserIssue").on(t.issueId, t.userId),
+]);
 
 export type Verification = typeof verifications.$inferSelect;
 export type InsertVerification = typeof verifications.$inferInsert;
@@ -196,3 +201,16 @@ export const notifications = mysqlTable("notifications", {
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * App configuration key-value store for API keys and settings
+ */
+export const config = mysqlTable("config", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  value: text("value"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Config = typeof config.$inferSelect;
+export type InsertConfig = typeof config.$inferInsert;

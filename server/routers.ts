@@ -3,7 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -167,17 +167,14 @@ Respond in JSON format: { "summary": "...", "severity": number }`,
       )
       .query(async ({ input }) => {
         try {
-          let issues;
-
-          if (input.status) {
-            issues = await db.getIssuesByStatus(input.status, input.limit, input.offset);
-          } else if (input.category) {
-            issues = await db.getIssuesByCategory(input.category, input.limit, input.offset);
-          } else {
-            issues = await db.getIssues(input.limit, input.offset);
+          if (input.status || input.category) {
+            return await db.getIssuesFiltered(
+              { status: input.status, category: input.category },
+              input.limit,
+              input.offset
+            );
           }
-
-          return issues;
+          return await db.getIssues(input.limit, input.offset);
         } catch (error) {
           console.error("Failed to fetch issues:", error);
           throw new TRPCError({
@@ -367,6 +364,33 @@ Respond in JSON format: { "summary": "...", "severity": number }`,
         await db.markNotificationAsRead(input.notificationId);
         return { success: true };
       }),
+  }),
+
+  // ===== Config / Settings =====
+  config: router({
+    getAll: adminProcedure.query(async () => {
+      const { getAllConfig } = await import("./_core/config");
+      return await getAllConfig();
+    }),
+
+    get: adminProcedure
+      .input(z.object({ key: z.string() }))
+      .query(async ({ input }) => {
+        return { key: input.key, value: await db.getConfig(input.key) };
+      }),
+
+    set: adminProcedure
+      .input(z.object({ key: z.string(), value: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.setConfig(input.key, input.value);
+        return { success: true };
+      }),
+
+    // Public endpoint for Google Maps key (needed for map rendering)
+    getGoogleMapsKey: publicProcedure.query(async () => {
+      const { getGoogleMapsKey } = await import("./_core/config");
+      return await getGoogleMapsKey();
+    }),
   }),
 });
 
