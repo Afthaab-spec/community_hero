@@ -2,7 +2,7 @@
 FROM node:20-slim AS frontend
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches/
 RUN pnpm install --frozen-lockfile
 COPY client ./client/
@@ -14,7 +14,7 @@ RUN pnpm vite build
 FROM node:20-slim AS server
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches/
 RUN pnpm install --frozen-lockfile
 COPY server ./server/
@@ -27,7 +27,7 @@ RUN pnpm esbuild server/_core/index.ts --platform=node --packages=external --bun
 FROM node:20-slim AS production
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches/
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=server /app/dist ./dist/
