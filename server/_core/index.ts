@@ -8,6 +8,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { getDb } from "../db";
+import { runMigrations } from "./migrate";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -52,6 +54,14 @@ function createRateLimiter(windowMs: number, maxRequests: number) {
 }
 
 async function startServer() {
+  // Run auto-migration
+  try {
+    const db = await getDb();
+    if (db) await runMigrations(db);
+  } catch (err) {
+    console.warn("[Migration] Failed:", err);
+  }
+
   const app = express();
   const server = createServer(app);
   app.use(express.json({ limit: "50mb" }));
