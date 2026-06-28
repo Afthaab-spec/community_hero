@@ -5,6 +5,7 @@ RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches/
 
 RUN pnpm install --frozen-lockfile
 
@@ -12,7 +13,6 @@ COPY client ./client/
 COPY server ./server/
 COPY shared ./shared/
 COPY drizzle ./drizzle/
-COPY patches ./patches/
 COPY vite.config.ts tsconfig.json tailwind.config.js ./
 
 RUN pnpm vite build
