@@ -62,6 +62,11 @@ async function startServer() {
   app.use("/api/auth/login", authLimiter);
   app.use("/api/auth/register", authLimiter);
 
+  // Health check endpoint for Railway
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok", timestamp: Date.now() });
+  });
+
   registerStorageProxy(app);
   registerOAuthRoutes(app);
 
