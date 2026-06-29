@@ -266,6 +266,21 @@ Respond in JSON format: { "summary": "...", "severity": number }`,
 
         return { success: true };
       }),
+
+    // Delete issue (admin only)
+    delete: adminProcedure
+      .input(z.object({ issueId: z.number() }))
+      .mutation(async ({ input }) => {
+        const issue = await db.getIssueById(input.issueId);
+        if (!issue) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Issue not found",
+          });
+        }
+        await db.deleteIssue(input.issueId);
+        return { success: true };
+      }),
   }),
 
   // ===== Verifications =====

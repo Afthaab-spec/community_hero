@@ -124,6 +124,14 @@ export async function createIssue(issue: InsertIssue) {
   return result[0];
 }
 
+export async function deleteIssue(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(verifications).where(eq(verifications.issueId, id));
+  await db.delete(issueStatusHistory).where(eq(issueStatusHistory.issueId, id));
+  await db.delete(issues).where(eq(issues.id, id));
+}
+
 export async function getIssueById(id: number) {
   const db = await getDb();
   if (!db) return undefined;

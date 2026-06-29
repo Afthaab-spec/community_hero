@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, Calendar, User, ThumbsUp, ThumbsDown, ArrowLeft } from "lucide-react";
+import { Loader2, MapPin, Calendar, User, ThumbsUp, ThumbsDown, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -41,6 +41,13 @@ export default function IssueDetailPage() {
     onSuccess: () => {
       utils.verifications.getForIssue.invalidate({ issueId });
       utils.issues.getById.invalidate({ id: issueId });
+    },
+  });
+
+  const deleteIssueMutation = trpc.issues.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Issue deleted");
+      navigate("/map");
     },
   });
 
@@ -84,7 +91,6 @@ export default function IssueDetailPage() {
     );
   }
 
-  const confirmCount = verifications?.filter((v) => v.verificationType === "confirm").length || 0;
   const upvoteCount = verifications?.filter((v) => v.verificationType === "upvote").length || 0;
   const downvoteCount = verifications?.filter((v) => v.verificationType === "downvote").length || 0;
   const userVote = verifications?.find((v) => v.userId === user?.id && (v.verificationType === "upvote" || v.verificationType === "downvote"));
@@ -134,6 +140,33 @@ export default function IssueDetailPage() {
                 </Badge>
               </div>
             </div>
+            {user?.role === "admin" && (
+              <button
+                onClick={() => {
+                  if (confirm("Are you sure you want to delete this issue?")) {
+                    deleteIssueMutation.mutate({ issueId });
+                  }
+                }}
+                disabled={deleteIssueMutation.isPending}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                  color: "white",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  flexShrink: 0,
+                }}
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+            )}
           </div>
         </div>
 
@@ -201,12 +234,6 @@ export default function IssueDetailPage() {
               <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
                 <div style={{ flex: 1, textAlign: "center", padding: "12px", backgroundColor: "hsl(var(--muted)) 50%", borderRadius: "8px" }}>
                   <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginBottom: "4px" }}>
-                    Confirmations
-                  </p>
-                  <p style={{ fontSize: "24px", fontWeight: "bold" }}>{confirmCount}</p>
-                </div>
-                <div style={{ flex: 1, textAlign: "center", padding: "12px", backgroundColor: "hsl(var(--muted)) 50%", borderRadius: "8px" }}>
-                  <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginBottom: "4px" }}>
                     Upvotes
                   </p>
                   <p style={{ fontSize: "24px", fontWeight: "bold", color: "#22c55e" }}>{upvoteCount}</p>
@@ -221,28 +248,6 @@ export default function IssueDetailPage() {
 
               {user && (
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    onClick={() => handleVerify("confirm")}
-                    disabled={createVerificationMutation.isPending}
-                    style={{
-                      flex: 1,
-                      padding: "10px 16px",
-                      borderRadius: "8px",
-                      border: "none",
-                      color: "white",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
-                      opacity: createVerificationMutation.isPending ? 0.6 : 1,
-                      background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    ✓ Confirm
-                  </button>
                   <button
                     onClick={() => handleVerify("upvote")}
                     disabled={createVerificationMutation.isPending || (userVote?.verificationType === "upvote")}
