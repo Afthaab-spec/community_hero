@@ -74,7 +74,7 @@ export const issues = mysqlTable("issues", {
   address: varchar("address", { length: 512 }),
   
   // Photo
-  photoUrl: varchar("photoUrl", { length: 512 }),
+  photoUrl: text("photoUrl"),
   photoKey: varchar("photoKey", { length: 255 }),
   
   // Status
@@ -104,7 +104,7 @@ export const issueStatusHistory = mysqlTable("issueStatusHistory", {
   toStatus: mysqlEnum("toStatus", ["Open", "InProgress", "Resolved"]).notNull(),
   changedBy: int("changedBy"),
   notes: text("notes"),
-  photoUrl: varchar("photoUrl", { length: 512 }), // Progress photo
+  photoUrl: text("photoUrl"), // Progress photo
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS issues (
   latitude DECIMAL(10,8) NOT NULL,
   longitude DECIMAL(11,8) NOT NULL,
   address VARCHAR(512),
-  photoUrl VARCHAR(512),
+  photoUrl TEXT,
   photoKey VARCHAR(255),
   status ENUM('Open','InProgress','Resolved') NOT NULL DEFAULT 'Open',
   isAnonymous BOOLEAN NOT NULL DEFAULT FALSE,
@@ -114,6 +114,9 @@ CREATE TABLE IF NOT EXISTS config (
   value TEXT,
   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+ALTER TABLE issues MODIFY COLUMN photoUrl TEXT;
+ALTER TABLE issueStatusHistory MODIFY COLUMN photoUrl TEXT;
 `;
 
 export async function runMigrations(db: any): Promise<void> {
