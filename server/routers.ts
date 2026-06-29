@@ -267,15 +267,23 @@ Respond in JSON format: { "summary": "...", "severity": number }`,
         return { success: true };
       }),
 
-    // Delete issue (admin only)
-    delete: adminProcedure
+    // Delete issue (owner or admin)
+    delete: protectedProcedure
       .input(z.object({ issueId: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         const issue = await db.getIssueById(input.issueId);
         if (!issue) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Issue not found",
+          });
+        }
+        const isAdmin = ctx.user.role === "admin";
+        const isOwner = issue.reporterId === ctx.user.id;
+        if (!isAdmin && !isOwner) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You can only delete your own issues",
           });
         }
         await db.deleteIssue(input.issueId);

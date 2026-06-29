@@ -140,7 +140,7 @@ export default function IssueDetailPage() {
                 </Badge>
               </div>
             </div>
-            {user?.role === "admin" && (
+            {user && (user.role === "admin" || issue.reporterId === user.id) && (
               <button
                 onClick={() => {
                   if (confirm("Are you sure you want to delete this issue?")) {
