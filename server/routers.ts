@@ -51,16 +51,22 @@ export const appRouter = router({
           let photoUrl: string | undefined;
           let photoKey: string | undefined;
 
-          // Upload photo to S3 if provided
+          // Upload photo to S3 if provided, otherwise store as data URL
           if (input.photoBase64) {
             const buffer = Buffer.from(input.photoBase64, "base64");
-            const result = await storagePut(
-              `issues/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`,
-              buffer,
-              "image/jpeg"
-            );
-            photoUrl = result.url;
-            photoKey = result.key;
+            try {
+              const result = await storagePut(
+                `issues/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`,
+                buffer,
+                "image/jpeg"
+              );
+              photoUrl = result.url;
+              photoKey = result.key;
+            } catch (storageErr) {
+              console.warn("[Storage] S3 unavailable, storing photo as data URL");
+              const mimeType = input.photoBase64.substring(0, 20).includes("png") ? "image/png" : "image/jpeg";
+              photoUrl = `data:${mimeType};base64,${input.photoBase64}`;
+            }
           }
 
           // Call LLM to analyze and auto-fill
