@@ -36,17 +36,32 @@ export default function IssueDetailPage() {
   const { data: verifications } = trpc.verifications.getForIssue.useQuery({
     issueId,
   });
-  const createVerificationMutation = trpc.verifications.create.useMutation();
+  const utils = trpc.useContext();
+  const createVerificationMutation = trpc.verifications.create.useMutation({
+    onSuccess: () => {
+      utils.verifications.getForIssue.invalidate({ issueId });
+      utils.issues.getById.invalidate({ id: issueId });
+    },
+  });
 
   const handleVerify = async (type: "upvote" | "confirm" | "flag") => {
+    if (!user) {
+      toast.error("Please log in to verify issues");
+      return;
+    }
     try {
       await createVerificationMutation.mutateAsync({
         issueId,
         type,
       });
       toast.success(`Issue ${type}d successfully!`);
-    } catch (error) {
-      toast.error("Failed to verify issue");
+    } catch (error: any) {
+      const msg = error?.message || "Failed to verify issue";
+      if (msg.includes("already verified")) {
+        toast.error("You have already verified this issue");
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
@@ -198,35 +213,74 @@ export default function IssueDetailPage() {
 
               {user && (
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={() => handleVerify("confirm")}
                     disabled={createVerificationMutation.isPending}
-                    className="flex-1"
+                    style={{
+                      flex: 1,
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      border: "none",
+                      color: "white",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
+                      opacity: createVerificationMutation.isPending ? 0.6 : 1,
+                      background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                    }}
                   >
                     ✓ Confirm
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
                     onClick={() => handleVerify("upvote")}
                     disabled={createVerificationMutation.isPending}
-                    className="flex-1"
+                    style={{
+                      flex: 1,
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      border: "none",
+                      color: "white",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
+                      opacity: createVerificationMutation.isPending ? 0.6 : 1,
+                      background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                    }}
                   >
                     <ThumbsUp size={14} />
                     Upvote
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
                     onClick={() => handleVerify("flag")}
                     disabled={createVerificationMutation.isPending}
-                    className="flex-1"
+                    style={{
+                      flex: 1,
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      border: "none",
+                      color: "white",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
+                      opacity: createVerificationMutation.isPending ? 0.6 : 1,
+                      background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                    }}
                   >
                     <Flag size={14} />
                     Flag
-                  </Button>
+                  </button>
                 </div>
               )}
             </Card>
