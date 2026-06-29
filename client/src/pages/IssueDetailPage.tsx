@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, Calendar, User, ThumbsUp, Flag, ArrowLeft } from "lucide-react";
+import { Loader2, MapPin, Calendar, User, ThumbsUp, ThumbsDown, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -44,7 +44,7 @@ export default function IssueDetailPage() {
     },
   });
 
-  const handleVerify = async (type: "upvote" | "confirm" | "flag") => {
+  const handleVerify = async (type: "upvote" | "confirm" | "downvote") => {
     if (!user) {
       toast.error("Please log in to verify issues");
       return;
@@ -58,7 +58,7 @@ export default function IssueDetailPage() {
     } catch (error: any) {
       const msg = error?.message || "Failed to verify issue";
       if (msg.includes("already verified")) {
-        toast.error("You have already verified this issue");
+        toast.error("You have already voted on this issue");
       } else {
         toast.error(msg);
       }
@@ -86,6 +86,8 @@ export default function IssueDetailPage() {
 
   const confirmCount = verifications?.filter((v) => v.verificationType === "confirm").length || 0;
   const upvoteCount = verifications?.filter((v) => v.verificationType === "upvote").length || 0;
+  const downvoteCount = verifications?.filter((v) => v.verificationType === "downvote").length || 0;
+  const userVote = verifications?.find((v) => v.userId === user?.id && (v.verificationType === "upvote" || v.verificationType === "downvote"));
 
   return (
     <div style={{ padding: "48px 20px", backgroundColor: "hsl(var(--background))" }}>
@@ -207,7 +209,13 @@ export default function IssueDetailPage() {
                   <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginBottom: "4px" }}>
                     Upvotes
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "bold" }}>{upvoteCount}</p>
+                  <p style={{ fontSize: "24px", fontWeight: "bold", color: "#22c55e" }}>{upvoteCount}</p>
+                </div>
+                <div style={{ flex: 1, textAlign: "center", padding: "12px", backgroundColor: "hsl(var(--muted)) 50%", borderRadius: "8px" }}>
+                  <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginBottom: "4px" }}>
+                    Downvotes
+                  </p>
+                  <p style={{ fontSize: "24px", fontWeight: "bold", color: "#ef4444" }}>{downvoteCount}</p>
                 </div>
               </div>
 
@@ -237,18 +245,18 @@ export default function IssueDetailPage() {
                   </button>
                   <button
                     onClick={() => handleVerify("upvote")}
-                    disabled={createVerificationMutation.isPending}
+                    disabled={createVerificationMutation.isPending || (userVote?.verificationType === "upvote")}
                     style={{
                       flex: 1,
                       padding: "10px 16px",
                       borderRadius: "8px",
-                      border: "none",
-                      color: "white",
+                      border: userVote?.verificationType === "upvote" ? "2px solid #22c55e" : "none",
+                      color: userVote?.verificationType === "upvote" ? "#22c55e" : "white",
                       fontWeight: "600",
                       fontSize: "14px",
-                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
+                      cursor: (createVerificationMutation.isPending || userVote?.verificationType === "upvote") ? "not-allowed" : "pointer",
                       opacity: createVerificationMutation.isPending ? 0.6 : 1,
-                      background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                      background: userVote?.verificationType === "upvote" ? "transparent" : "linear-gradient(135deg, #22c55e, #16a34a)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -256,30 +264,30 @@ export default function IssueDetailPage() {
                     }}
                   >
                     <ThumbsUp size={14} />
-                    Upvote
+                    Upvote {userVote?.verificationType === "upvote" ? "✓" : ""}
                   </button>
                   <button
-                    onClick={() => handleVerify("flag")}
-                    disabled={createVerificationMutation.isPending}
+                    onClick={() => handleVerify("downvote")}
+                    disabled={createVerificationMutation.isPending || (userVote?.verificationType === "downvote")}
                     style={{
                       flex: 1,
                       padding: "10px 16px",
                       borderRadius: "8px",
-                      border: "none",
-                      color: "white",
+                      border: userVote?.verificationType === "downvote" ? "2px solid #ef4444" : "none",
+                      color: userVote?.verificationType === "downvote" ? "#ef4444" : "white",
                       fontWeight: "600",
                       fontSize: "14px",
-                      cursor: createVerificationMutation.isPending ? "not-allowed" : "pointer",
+                      cursor: (createVerificationMutation.isPending || userVote?.verificationType === "downvote") ? "not-allowed" : "pointer",
                       opacity: createVerificationMutation.isPending ? 0.6 : 1,
-                      background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                      background: userVote?.verificationType === "downvote" ? "transparent" : "linear-gradient(135deg, #ef4444, #dc2626)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "6px",
                     }}
                   >
-                    <Flag size={14} />
-                    Flag
+                    <ThumbsDown size={14} />
+                    Downvote {userVote?.verificationType === "downvote" ? "✓" : ""}
                   </button>
                 </div>
               )}

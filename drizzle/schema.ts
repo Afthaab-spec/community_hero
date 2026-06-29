@@ -118,7 +118,7 @@ export const verifications = mysqlTable("verifications", {
   id: int("id").autoincrement().primaryKey(),
   issueId: int("issueId").notNull(),
   userId: int("userId").notNull(),
-  verificationType: mysqlEnum("verificationType", ["upvote", "confirm", "flag"]).notNull(),
+  verificationType: mysqlEnum("verificationType", ["upvote", "confirm", "downvote"]).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (t) => [
   uniqueIndex("uniqueUserIssue").on(t.issueId, t.userId),

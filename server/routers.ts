@@ -275,17 +275,25 @@ Respond in JSON format: { "summary": "...", "severity": number }`,
       .input(
         z.object({
           issueId: z.number(),
-          type: z.enum(["upvote", "confirm", "flag"]),
+          type: z.enum(["upvote", "confirm", "downvote"]),
         })
       )
       .mutation(async ({ ctx, input }) => {
         // Check if user already verified this issue
         const existing = await db.getUserVerificationForIssue(input.issueId, ctx.user.id);
         if (existing) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "You have already verified this issue",
-          });
+          // If switching between upvote/downvote, delete the old one
+          if (
+            (existing.verificationType === "upvote" && input.type === "downvote") ||
+            (existing.verificationType === "downvote" && input.type === "upvote")
+          ) {
+            await db.deleteVerification(existing.id);
+          } else {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "You have already verified this issue",
+            });
+          }
         }
 
         // Create verification

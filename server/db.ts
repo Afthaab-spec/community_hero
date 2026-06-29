@@ -259,6 +259,12 @@ export async function getUserVerificationForIssue(issueId: number, userId: numbe
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function deleteVerification(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(verifications).where(eq(verifications.id, id));
+}
+
 // ===== Points & Gamification =====
 
 export async function addPoints(pointsEntry: InsertPointsLog) {

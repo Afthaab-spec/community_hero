@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS verifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   issueId INT NOT NULL,
   userId INT NOT NULL,
-  verificationType ENUM('upvote','confirm','flag') NOT NULL,
+  verificationType ENUM('upvote','confirm','downvote') NOT NULL,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uniqueUserIssue (issueId, userId)
 );
@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS config (
 
 ALTER TABLE issues MODIFY COLUMN photoUrl MEDIUMTEXT;
 ALTER TABLE issueStatusHistory MODIFY COLUMN photoUrl MEDIUMTEXT;
+ALTER TABLE verifications MODIFY COLUMN verificationType ENUM('upvote','confirm','downvote') NOT NULL;
 `;
 
 export async function runMigrations(db: any): Promise<void> {
