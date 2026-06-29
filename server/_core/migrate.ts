@@ -115,8 +115,8 @@ CREATE TABLE IF NOT EXISTS config (
   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-ALTER TABLE issues MODIFY COLUMN photoUrl TEXT;
-ALTER TABLE issueStatusHistory MODIFY COLUMN photoUrl TEXT;
+ALTER TABLE issues MODIFY COLUMN photoUrl MEDIUMTEXT;
+ALTER TABLE issueStatusHistory MODIFY COLUMN photoUrl MEDIUMTEXT;
 `;
 
 export async function runMigrations(db: any): Promise<void> {

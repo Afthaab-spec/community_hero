@@ -101,6 +101,30 @@ export default function IssueReportPage() {
     }
   };
 
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxSize = 800;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = (h / w) * maxSize; w = maxSize; }
+          else { w = (w / h) * maxSize; h = maxSize; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+        URL.revokeObjectURL(url);
+        resolve(compressed);
+      };
+      img.src = url;
+    });
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,14 +153,7 @@ export default function IssueReportPage() {
       let photoBase64: string | undefined;
 
       if (formData.photo) {
-        const reader = new FileReader();
-        photoBase64 = await new Promise((resolve) => {
-          reader.onload = () => {
-            const base64 = (reader.result as string).split(",")[1];
-            resolve(base64);
-          };
-          reader.readAsDataURL(formData.photo!);
-        });
+        photoBase64 = await compressImage(formData.photo);
       }
 
       await createIssueMutation.mutateAsync({
